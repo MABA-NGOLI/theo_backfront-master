@@ -4,7 +4,7 @@ name: Deploy Frontend to VPS
 on:
   push:
     branches:
-      - main  # Déclenche le workflow sur push sur la branche main
+      - main  # Déclenche sur la branche master
 
 jobs:
   build-and-deploy:
@@ -41,8 +41,8 @@ jobs:
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H $VPS_HOST >> ~/.ssh/known_hosts
 
-        # Transfert du build
+        # Transfert du build vers le VPS
         rsync -avz --delete admin-dashboard/dist/ $VPS_USER@$VPS_HOST:$VPS_PATH/dist/
 
-        # Relancer PM2 sur le VPS
-        ssh $VPS_USER@$VPS_HOST "pm2 restart frontend || pm2 start npx --name frontend -- serve -s $VPS_PATH/dist -l 5000"
+        #  Redémarrage du frontend sur PM2
+        ssh $VPS_USER@$VPS_HOST "pm2 restart frontend || pm2 start 'npx serve -s $VPS_PATH/dist -l 5000' --name frontend"
