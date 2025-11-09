@@ -1,0 +1,48 @@
+
+name: Deploy Frontend to VPS
+
+on:
+  push:
+    branches:
+      - main  # Déclenche le workflow sur push sur la branche main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Install dependencies
+      run: |
+        cd admin-dashboard
+        npm ci
+
+    - name: Build frontend
+      run: |
+        cd admin-dashboard
+        npm run build
+
+    - name: Deploy to VPS
+      env:
+        VPS_HOST: ${{ secrets.VPS_HOST }}
+        VPS_USER: ${{ secrets.VPS_USER }}
+        VPS_PATH: ${{ secrets.VPS_PATH }}
+        SSH_KEY: ${{ secrets.VPS_KEY }}
+      run: |
+        mkdir -p ~/.ssh
+        echo "$SSH_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H $VPS_HOST >> ~/.ssh/known_hosts
+
+        # Transfert du build
+        rsync -avz --delete admin-dashboard/dist/ $VPS_USER@$VPS_HOST:$VPS_PATH/dist/
+
+        # Relancer PM2 sur le VPS
+        ssh $VPS_USER@$VPS_HOST "pm2 restart frontend || pm2 start npx --name frontend -- serve -s $VPS_PATH/dist -l 5000"
