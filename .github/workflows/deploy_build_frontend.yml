@@ -43,5 +43,5 @@ jobs:
         # Transfert du build
         rsync -avz --delete admin-dashboard/dist/ $VPS_USER@$VPS_HOST:$VPS_PATH/dist/
 
-        # Relancer PM2 sur le VPS
+        # Relancer PM2 sur le VPS.
         ssh $VPS_USER@$VPS_HOST "pm2 restart frontend || pm2 start npx --name frontend -- serve -s $VPS_PATH/dist -l 5000"
