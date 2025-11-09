@@ -1,33 +1,31 @@
-name: Build and Deploy Frontend to VPS
+name: Deploy Frontend to VPS
 
 on:
   push:
     branches:
-      - main   # Déclenche le workflow à chaque push sur main
+      - main  
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      #  Récupérer le code depuis GitHub
+     
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      #  Installer Node.js
+  
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      #  Installer les dépendances et build le frontend
       - name: Build frontend
         run: |
           cd admin-dashboard
           npm ci
-          npm run build || echo " TypeScript errors ignored, continue"
+          npm run build || echo "TypeScript errors ignored, continue"
 
-      # Configurer la clé SSH pour le VPS
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
@@ -35,19 +33,20 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-      # Transférer le build sur le VPS
+     
       - name: Deploy to VPS
         run: |
-          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" \
-          admin-dashboard/dist/ \
-          ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_PATH }}/dist/
+          rsync -avz --delete \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            admin-dashboard/dist/ \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_PATH }}/dist/
 
-      # Relancer PM2 sur le VPS pour servir le frontend
-      - name: Restart frontend with PM2
+      
+      - name: Restart Frontend
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
           "pm2 restart frontend || pm2 start npx --name frontend -- serve -s ${{ secrets.VPS_PATH }}/dist -l 5000"
 
-      #  Fin du job
+  
       - name: Deployment complete
-        run: echo " Déploiement terminé avec succès !"
+        run: echo " Déploiement frontend réussi !"
