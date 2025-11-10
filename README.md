@@ -53,16 +53,15 @@ Le workflow se déclenche automatiquement sur push sur la branche main
 Si le déploiement échoue :Le workflow s’arrête automatiquement pour revenir à une version précédente 
 Le rollback est manuel pour le moment, car il n’y a pas de versioning automatique sur le serveur pour le front-end.
 
----
 
 5. Checklist de Validation
 
-1.  Back-end build complet et fonctionnel
-2.  Fichiers back-end transférés correctement sur le VPS
-3.  PM2 redémarre correctement le back-end
-4.  API back-end accessible via l’IP du VPS
-5.  Front-end build échoue (`admin-dashboard/dist/` n’est pas généré)
-6.  Aucun fichier sensible (clé privée, node_modules, dist) dans le dépôt GitHub
-7.  Logs PM2 propres, sans erreurs
-8.  Workflow GitHub Actions passe pour le back-end
+-  Back-end build complet et fonctionnel
+-  Fichiers back-end transférés correctement sur le VPS
+-  PM2 redémarre correctement le back-end
+-  API back-end accessible via l’IP du VPS
+-  Front-end build échoue (`admin-dashboard/dist/` n’est pas généré)
+-  Aucun fichier sensible (clé privée, node_modules, dist) dans le dépôt GitHub
+-  Logs PM2 propres, sans erreurs
+-  Workflow GitHub Actions passe pour le back-end
 
