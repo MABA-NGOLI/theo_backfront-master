@@ -3,28 +3,26 @@ name: Deploy Frontend to VPS
 on:
   push:
     branches:
-      - main  
+      - main   # Déclenche le déploiement si push sur main
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-     
       - name: Checkout repository
         uses: actions/checkout@v3
 
-  
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      - name: Build frontend
+      - name: Install dependencies & Build
         run: |
           cd admin-dashboard
-          npm ci
-          npm run build || echo "TypeScript errors ignored, continue"
+          npm install
+          npm run build
 
       - name: Setup SSH
         run: |
@@ -33,20 +31,14 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-     
       - name: Deploy to VPS
         run: |
-          rsync -avz --delete \
-            -e "ssh -o StrictHostKeyChecking=no" \
-            admin-dashboard/dist/ \
-            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_PATH }}/dist/
+          rsync -avz admin-dashboard/dist/ \
+          ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_PATH }}/dist/
 
-      
-      - name: Restart Frontend
+      - name: Restart frontend
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-          "pm2 restart frontend || pm2 start npx --name frontend -- serve -s ${{ secrets.VPS_PATH }}/dist -l 5000"
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "pm2 restart frontend || pm2 start npx --name frontend -- serve -s ${{ secrets.VPS_PATH }}/dist -l 5000"
 
-  
       - name: Deployment complete
-        run: echo " Déploiement frontend réussi !"
+        run: echo "Déploiement Frontend terminé avec succès "
