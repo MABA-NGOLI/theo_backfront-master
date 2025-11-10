@@ -36,7 +36,7 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-      # 5️⃣ Déployer le build sur le VPS
+      #  Déployer le build sur le VPS
       - name: Deploy to VPS
         run: |
            if [ -d "admin-dashboard/dist" ]; then
@@ -44,11 +44,11 @@ jobs:
             ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "pm2 restart frontend || pm2 start npx --name frontend -- serve -s ${{ secrets.VPS_PATH }}/dist -l 5000"
 
            else
-            echo "❌ dist/ not found, skipping deployment"
+            echo " dist/ not found, skipping deployment"
             exit 1
            fi
 
-      # 6️⃣ Redémarrer PM2 ou lancer le serveur
+      #  Redémarrer PM2 ou lancer le serveur
       - name: Restart frontend on VPS
         run: |
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
