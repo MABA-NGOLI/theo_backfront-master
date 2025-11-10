@@ -3,7 +3,7 @@ name: Deploy Frontend to VPS
 on:
   push:
     branches:
-      - main   # Déclenche le déploiement si push sur main
+      - main   
 
 jobs:
   build-and-deploy:
