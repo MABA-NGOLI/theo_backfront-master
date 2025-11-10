@@ -39,9 +39,14 @@ jobs:
       # 5️⃣ Déployer le build sur le VPS
       - name: Deploy to VPS
         run: |
-          rsync -avz --delete admin-dashboard/dist/ \
-          -e "ssh -o StrictHostKeyChecking=no" \
-          ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_PATH }}/dist/
+           if [ -d "admin-dashboard/dist" ]; then
+            rsync -avz --delete admin-dashboard/dist/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_PATH }}/dist/
+            ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "pm2 restart frontend || pm2 start npx --name frontend -- serve -s ${{ secrets.VPS_PATH }}/dist -l 5000"
+
+           else
+            echo "❌ dist/ not found, skipping deployment"
+            exit 1
+           fi
 
       # 6️⃣ Redémarrer PM2 ou lancer le serveur
       - name: Restart frontend on VPS
